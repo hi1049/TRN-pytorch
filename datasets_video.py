@@ -9,11 +9,18 @@ ROOT_DATASET= 'video_datasets'
 def return_something(modality):
     filename_categories = 'something/category.txt'
     if modality == 'RGB':
-        root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/20bn-something-something-v1'
+        root_data = 'video_datasets/something-something/20bn-something-something-v1'
         filename_imglist_train = 'something/train_videofolder.txt'
         filename_imglist_val = 'something/val_videofolder.txt'
-
         prefix = '{:05d}.jpg'
+
+    elif modality == 'Flow':
+        # root_data = '/data/vision/oliva/scratch/bzhou/video/something-something/flow'
+        root_data = '/mnt/localssd1/bzhou/something/flow'
+        filename_imglist_train = 'something/train_videofolder.txt'
+        filename_imglist_val = 'something/val_videofolder.txt'
+        prefix = '{:05d}.jpg'
+
     else:
         print('no such modality:'+modality)
         os.exit()
@@ -23,7 +30,7 @@ def return_jester(modality):
     filename_categories = 'jester/category.txt'
     if modality == 'RGB':
         prefix = '{:05d}.jpg'
-        root_data = '/data/vision/oliva/scratch/bzhou/video/jester/20bn-jester-v1'
+        root_data = 'video_datasets/jester/20bn-jester-v1'
         filename_imglist_train = 'jester/train_videofolder.txt'
         filename_imglist_val = 'jester/val_videofolder.txt'
     else:

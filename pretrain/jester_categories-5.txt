@@ -1,0 +1,5 @@
+Stop Sign
+Swiping Down
+Swiping Left
+Swiping Right
+Swiping Up

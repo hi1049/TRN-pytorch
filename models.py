@@ -134,6 +134,14 @@ class TSN(nn.Module):
             self.input_size = 299
             self.input_mean = [0.5]
             self.input_std = [0.5]
+
+        elif base_model == 'TinyYoloNet':
+            import model_zoo
+            self.base_model = getattr(model_zoo, base_model)()
+            self.base_model.last_layer_name = 'fc'
+            self.input_size = 160
+            self.input_mean = [0.485, 0.456, 0.406]
+            self.input_std = [0.229, 0.224, 0.225]
         else:
             raise ValueError('Unknown base model: {}'.format(base_model))
 

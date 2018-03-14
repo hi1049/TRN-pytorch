@@ -1,23 +1,22 @@
 # test the pre-trained model on a single video
 # (working on it)
 # Bolei Zhou and Alex Andonian
+from torch.nn import functional as F
 
-import os
-import re
-import cv2
 import argparse
 import functools
+import os
+import re
 import subprocess
+
+import cv2
+# imageio.plugins.ffmpeg.download()
+import moviepy.editor as mpy
 import numpy as np
 from PIL import Image
-import moviepy.editor as mpy
 
-import torch.nn.parallel
-import torch.optim
 from models import TSN
 from transforms import *
-import datasets_video
-from torch.nn import functional as F
 
 
 def extract_frames(video_file, num_frames=8):

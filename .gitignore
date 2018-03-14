@@ -101,3 +101,12 @@ ENV/
 .mypy_cache/
 
 .idea
+*.tar
+
+*.csv#
+
+*.weights
+
+*.mp4
+
+*.jpg
