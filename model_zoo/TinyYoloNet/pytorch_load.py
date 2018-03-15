@@ -25,7 +25,7 @@ class BasicConv2D(nn.Module):
             if self.pool_stride == 2:
                 x = self.maxpool(x)
             elif self.pool_stride == 1:
-                x = nn.MaxPool2d(F.pad(x, (0, 1, 0, 1), mode='replicate'), 2, stride=1)
+                x = nn.MaxPool2d(F.pad(x, (0, 1, 0, 1), mode='replicate'), kernel_size=2, stride=1)
         return x
 
 class TinyYoloNet(nn.Module):
