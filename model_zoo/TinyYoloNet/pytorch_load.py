@@ -29,7 +29,7 @@ class BasicConv2D(nn.Module):
         return x
 
 class TinyYoloNet(nn.Module):
-    def __init__(self, num_output=1000):
+    def __init__(self, num_output=1001):
         super(TinyYoloNet, self).__init__()
         self.features = nn.Sequential(
             # conv1
