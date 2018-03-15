@@ -51,7 +51,7 @@ class TinyYoloNet(nn.Module):
             BasicConv2D(256, 512, 3, 1, 1, bias=False, add_maxpool=True, pool_stride=1),
 
             # conv7
-            BasicConv2D(512, 1024, 3, 1, 1, bias=False),
+            BasicConv2D(512, 1024, 3, 1, 1, bias=False)
 
             # conv8
             #BasicConv2D(1024, 1024, 3, 1, 1, bias=False)
