@@ -54,12 +54,12 @@ class TinyYoloNet(nn.Module):
             BasicConv2D(512, 1024, 3, 1, 1, bias=False),
 
             # conv8
-            BasicConv2D(1024, 1024, 3, 1, 1, bias=False)
+            #BasicConv2D(1024, 1024, 3, 1, 1, bias=False)
         )
 
         # fc
-        #self.fc = nn.Conv2d(1024, num_output, 1, 1, 0)
-        self.fc = nn.Linear(1024, num_output)
+        self.fc = nn.Conv2d(1024, num_output, 1, 1, 0)
+        #self.fc = nn.Linear(1024, num_output)
         # load weights
         #self.load_state_dict()
 
