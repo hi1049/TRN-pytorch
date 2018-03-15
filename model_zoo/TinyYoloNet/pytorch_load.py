@@ -1,6 +1,8 @@
 
 import torch.nn as nn
 
+import torch.nn.functional as F
+
 class BasicConv2D(nn.Module):
     def __init__(self, in_planes, out_planes, kernel_size, stride, padding=0, bias=False, add_maxpool=False, pool_stride=0):
         super(BasicConv2D, self).__init__()
@@ -23,7 +25,7 @@ class BasicConv2D(nn.Module):
             if self.pool_stride == 2:
                 x = self.maxpool(x)
             elif self.pool_stride == 1:
-                x = nn.MaxPool2d(self.pad(x, (0, 1, 0, 1), mode='replicate'), 2, stride=1)
+                x = nn.MaxPool2d(F.pad(x, (0, 1, 0, 1), mode='replicate'), 2, stride=1)
         return x
 
 class TinyYoloNet(nn.Module):
