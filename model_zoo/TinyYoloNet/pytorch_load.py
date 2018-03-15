@@ -59,15 +59,15 @@ class TinyYoloNet(nn.Module):
 
         # fc
         #self.fc = nn.Conv2d(1024, num_output, 1, 1, 0)
-        self.fc = nn.Linear(1024, num_output)
+        #self.fc = nn.Linear(1024, num_output)
         # load weights
         #self.load_state_dict()
 
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
+        #x = x.view(x.size(0), -1)
+        #x = self.fc(x)
         return x
 
     '''
