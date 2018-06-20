@@ -75,9 +75,9 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--video_file', type=str, default=None)
 group.add_argument('--frame_folder', type=str, default=None)
 parser.add_argument('--modality', type=str, default='RGB',
-                    choices=['RGB', 'Flow', 'RGBDiff'], )
-parser.add_argument('--dataset', type=str, default='moments',
-                    choices=['something', 'jester', 'moments'])
+                    choices=['RGB', 'Flow', 'RGBDiff', 'depth'], )
+parser.add_argument('--dataset', type=str, default='jester',
+                    choices=['something', 'jester', 'moments', 'egogesture', 'tacos', 'yawdd'])
 parser.add_argument('--rendered_output', type=str, default=None)
 parser.add_argument('--arch', type=str, default="InceptionV3")
 parser.add_argument('--input_size', type=int, default=224)

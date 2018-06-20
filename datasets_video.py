@@ -6,9 +6,64 @@ import torchvision.datasets as datasets
 
 ROOT_DATASET= 'video_datasets'
 
+def return_yawdd(modality):
+    filename_categories = 'YawDD/category.txt'
+    if modality == 'RGB' or modality == 'RGBDiff':
+        prefix = '{:05d}.jpg'
+        root_data = 'video_datasets/YawDD/frame-4'
+        filename_imglist_train = 'YawDD/train_videofolder.txt'
+        filename_imglist_val = 'YawDD/val_videofolder.txt'
+    else:
+        print('no such modality:'+modality)
+        os.exit()
+    return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
+
+def return_tacos(modality):
+    filename_categories = 'tacos/category.txt'
+    if modality == 'RGB' or modality == 'RGBDiff':
+        prefix = '{:05d}.jpg'
+        root_data = 'video_datasets/tacos/frame-4'
+        filename_imglist_train = 'tacos/train_videofolder.txt'
+        filename_imglist_val = 'tacos/val_videofolder.txt'
+    else:
+        print('no such modality:'+modality)
+        os.exit()
+    return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
+
+def return_jester(modality):
+    filename_categories = 'jester/category.txt'
+    if modality == 'RGB' or modality == 'RGBDiff':
+        prefix = '{:05d}.jpg'
+        root_data = 'video_datasets/jester/20bn-jester-v1'
+        filename_imglist_train = 'jester/train_videofolder.txt'
+        filename_imglist_val = 'jester/val_videofolder.txt'
+    else:
+        print('no such modality:'+modality)
+        os.exit()
+    return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
+
+def return_egogesture(modality):
+    filename_categories = 'egogesture/category.txt'
+    if modality == 'RGB' or modality == 'RGBDiff':
+        root_data = 'video_datasets/egogesture/rgb'
+        filename_imglist_train = 'egogesture/train_videofolder.txt'
+        filename_imglist_val = 'egogesture/val_videofolder.txt'
+        prefix = '{:06d}.jpg'
+
+    elif modality == 'depth':
+        root_data = 'video_datasets/egogesture/depth'
+        filename_imglist_train = 'egogesture/train_videofolder.txt'
+        filename_imglist_val = 'egogesture/val_videofolder.txt'
+        prefix = '{:06d}.jpg'
+
+    else:
+        print('no such modality:'+modality)
+        os.exit()
+    return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
+
 def return_something(modality):
     filename_categories = 'something/category.txt'
-    if modality == 'RGB':
+    if modality == 'RGB' or modality == 'RGBDiff':
         root_data = 'video_datasets/something-something/20bn-something-something-v1'
         filename_imglist_train = 'something/train_videofolder.txt'
         filename_imglist_val = 'something/val_videofolder.txt'
@@ -21,18 +76,6 @@ def return_something(modality):
         filename_imglist_val = 'something/val_videofolder.txt'
         prefix = '{:05d}.jpg'
 
-    else:
-        print('no such modality:'+modality)
-        os.exit()
-    return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
-
-def return_jester(modality):
-    filename_categories = 'jester/category.txt'
-    if modality == 'RGB':
-        prefix = '{:05d}.jpg'
-        root_data = 'video_datasets/jester/20bn-jester-v1'
-        filename_imglist_train = 'jester/train_videofolder.txt'
-        filename_imglist_val = 'jester/val_videofolder.txt'
     else:
         print('no such modality:'+modality)
         os.exit()
@@ -68,7 +111,10 @@ def return_moments(modality):
     return filename_categories, filename_imglist_train, filename_imglist_val, root_data, prefix
 
 def return_dataset(dataset, modality):
-    dict_single = {'jester':return_jester, 'something':return_something, 'charades': return_charades, 'moments': return_moments}
+    dict_single = {'jester':return_jester, 'something':return_something,
+                   'charades': return_charades, 'moments': return_moments,
+                   'egogesture': return_egogesture, 'tacos': return_tacos, 'yawdd': return_yawdd}
+
     if dataset in dict_single:
         file_categories, file_imglist_train, file_imglist_val, root_data, prefix = dict_single[dataset](modality)
     else:

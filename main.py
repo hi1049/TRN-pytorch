@@ -68,9 +68,10 @@ def main():
 
     if args.modality == 'RGB':
         data_length = 1
-    elif args.modality in ['Flow', 'RGBDiff']:
+    elif args.modality in ['Flow', 'RGBDiff', 'depth']:
         data_length = 5
 
+    #
     train_loader = torch.utils.data.DataLoader(
         TSNDataSet(args.root_path, args.train_list, num_segments=args.num_segments,
                    new_length=data_length,

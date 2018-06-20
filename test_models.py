@@ -17,22 +17,22 @@ from torch.nn import functional as F
 # options
 parser = argparse.ArgumentParser(
     description="TRN testing on the full validation set")
-parser.add_argument('dataset', type=str, choices=['something','jester','moments','charades'], default="jester")
-parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff'])
+parser.add_argument('dataset', type=str, choices=['something', 'jester', 'moments', 'charades', 'egogesture', 'tacos', 'yawdd'], default="jester")
+parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff', 'depth'])
 parser.add_argument('weights', type=str)
 parser.add_argument('--arch', type=str, default="BNInception") #resnet101
 parser.add_argument('--save_scores', type=str, default=None)
-parser.add_argument('--test_segments', type=int, default=25)
+parser.add_argument('--test_segments', type=int, default=8)
 parser.add_argument('--max_num', type=int, default=-1)
 parser.add_argument('--test_crops', type=int, default=10)
 parser.add_argument('--input_size', type=int, default=224)
-parser.add_argument('--crop_fusion_type', type=str, default='TRN',
+parser.add_argument('--crop_fusion_type', type=str, default='TRNmultiscale',
                     choices=['avg', 'TRN','TRNmultiscale'])
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=30, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--gpus', nargs='+', type=int, default=None)
 parser.add_argument('--img_feature_dim',type=int, default=256)
-parser.add_argument('--num_set_segments',type=int, default=1,help='TODO: select multiply set of n-frames from a video')
+parser.add_argument('--num_set_segments',type=int, default=8,help='TODO: select multiply set of n-frames from a video')
 parser.add_argument('--softmax', type=int, default=0)
 
 args = parser.parse_args()
@@ -180,8 +180,63 @@ video_pred = [np.argmax(np.mean(x[0], axis=0)) for x in output]
 
 video_labels = [x[1] for x in output]
 
-
 cf = confusion_matrix(video_labels, video_pred).astype(float)
+print(cf)
+print(len(cf))
+print(len(video_labels))
+
+TP = np.zeros(len(cf))           # [label x 1]
+TN = np.zeros(len(cf))           # [label x 1]
+FP = np.zeros(len(cf))           # [label x 1]
+FN = np.zeros(len(cf))           # [label x 1]
+
+FPR = np.zeros(len(cf))           # [label x 1]
+FNR = np.zeros(len(cf))           # [label x 1]
+
+
+Prec = np.zeros(len(cf))   # [label x 1]
+REC = np.zeros(len(cf))  # [label x 1]
+
+total_Prec = 0
+total_REC = 0
+total_FPR = 0
+total_FNR = 0
+
+# cf[cf_in][cf_out]
+for cf_in in range(len(cf)):
+    for cf_out in range(len(cf)):
+        for cls in range(len(cf)):
+            if cf_in == cf_out:
+                TP[cf_in] = (cf[cf_in][cf_out])
+            if cls != cf_in and cls != cf_out:
+                TN[cls] = cf[cf_in][cf_out] + TN[cls]
+            if cls == cf_in and cls != cf_out:
+                FP[cls] = cf[cf_in][cf_out] + FP[cls]
+            if cls != cf_in and cls == cf_out:
+                FN[cls] = cf[cf_in][cf_out] + FN[cls]
+
+for cls in range(len(cf)):
+    # Prec = sum( TP/(TP+FP) )
+    Prec[cls] = (TP[cls]/(TP[cls]+FP[cls]))
+    total_Prec = Prec[cls] + total_Prec
+    # REC = sum( TP/(TP+FN) )
+    REC[cls] = (TP[cls]/(TP[cls]+FN[cls]))
+    total_REC = REC[cls] + total_REC
+    # FPR = sum( FP/(FP+TN) )
+    FPR[cls] = (FP[cls]/(FP[cls]+TN[cls]))
+    total_FPR = FPR[cls] + total_FPR
+    # FNR = sum( FN/(TP+FN) )
+    FNR[cls] = (FN[cls]/(TP[cls]+FN[cls]))
+    total_FNR = FNR[cls] + total_FNR
+
+macro_avg_Prec = total_Prec/len(cf)
+macro_avg_REC = total_REC/len(cf)
+
+macro_avg_FPR = total_FPR/len(cf)
+macro_avg_FNR = total_FNR/len(cf)
+
+# F1 = 2*(AP*REC)/(AP+REC)
+macro_F1 = 2*(macro_avg_Prec*macro_avg_REC)/(macro_avg_Prec+macro_avg_REC)
 
 cls_cnt = cf.sum(axis=1)
 cls_hit = np.diag(cf)
@@ -189,9 +244,11 @@ cls_hit = np.diag(cf)
 cls_acc = cls_hit / cls_cnt
 
 print('-----Evaluation is finished------')
-print('Class Accuracy {:.02f}%'.format(np.mean(cls_acc) * 100))
-print('Overall Prec@1 {:.02f}% Prec@5 {:.02f}%'.format(top1.avg, top5.avg))
-
+print('Class Accuracy {:.06f}%'.format(np.mean(cls_acc) * 100))
+print('Overall Prec@1 {:.06f}% Prec@5 {:.06f}%'.format(top1.avg, top5.avg))
+print('macro_avg_Precision {:.06f}  macro_avg_Recall {:.06f}'.format(macro_avg_Prec, macro_avg_REC))
+print('macro F1 score {:.06f}'.format(macro_F1))
+print('FPR {:.06f}  FNR {:.06f}'.format(macro_avg_FPR, macro_avg_FNR))
 if args.save_scores is not None:
 
     # reorder before saving

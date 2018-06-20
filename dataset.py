@@ -1,6 +1,7 @@
 import torch.utils.data as data
 
 from PIL import Image
+from PIL import ImageChops
 import os
 import os.path
 import numpy as np
@@ -51,7 +52,7 @@ class TSNDataSet(data.Dataset):
             except Exception:
                 print('error loading image:', os.path.join(self.root_path, directory, self.image_tmpl.format(idx)))
                 return [Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format(1))).convert('RGB')]
-        elif self.modality == 'Flow':
+        elif self.modality == 'Flow' or self.modality == 'depth':
             try:
                 #idx_skip = 1 + (idx-1)*5
                 flow = Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format(idx))).convert('RGB')
@@ -114,7 +115,7 @@ class TSNDataSet(data.Dataset):
         record = self.video_list[index]
         # check this is a legit video folder
         while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format(1))):
-            print(os.path.join(self.root_path, record.path, self.image_tmpl.format(1)))
+            # print(os.path.join(self.root_path, record.path, self.image_tmpl.format(1)))
             index = np.random.randint(len(self.video_list))
             record = self.video_list[index]
 
@@ -125,6 +126,24 @@ class TSNDataSet(data.Dataset):
 
         return self.get(record, segment_indices)
 
+    def get(self, record, indices):
+        images = list()
+        for seg_ind in indices:
+            p = int(seg_ind)
+            for i in range(self.new_length):
+                seg_imgs = self._load_image(record.path, p)
+                images.extend(seg_imgs)
+                if p < record.num_frames:
+                    p += 1
+        #print('path:', record.path, 'indices:', indices, len(images))
+        #diff_images = self.diff(images, indices)
+        process_data = self.transform(images)
+        return process_data, record.label
+
+    def __len__(self):
+        return len(self.video_list)
+
+'''
     def get(self, record, indices):
 
         images = list()
@@ -138,6 +157,4 @@ class TSNDataSet(data.Dataset):
 
         process_data = self.transform(images)
         return process_data, record.label
-
-    def __len__(self):
-        return len(self.video_list)
+'''

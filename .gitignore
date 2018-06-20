@@ -110,3 +110,5 @@ ENV/
 *.mp4
 
 *.jpg
+
+18\.05\.21-result_multiscaleTRN_class10_tacos/TRN_tacos_RGB_BNInception_TRNmultiscale_segment8\.csv

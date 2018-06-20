@@ -48,6 +48,10 @@ class TSN(nn.Module):
             print("Converting the ImageNet model to a flow init model")
             self.base_model = self._construct_flow_model(self.base_model)
             print("Done. Flow model ready...")
+        if self.modality == 'depth':
+            print("Converting the ImageNet model to a depth init model")
+            self.base_model = self._construct_flow_model(self.base_model)
+            print("Done. depth model ready...")
         elif self.modality == 'RGBDiff':
             print("Converting the ImageNet model to RGB+Diff init model")
             self.base_model = self._construct_diff_model(self.base_model)
@@ -100,9 +104,13 @@ class TSN(nn.Module):
             if self.modality == 'Flow':
                 self.input_mean = [0.5]
                 self.input_std = [np.mean(self.input_std)]
+            elif self.modality == 'depth':
+                self.input_mean = [0.5]
+                self.input_std == [np.mean(self.input_std)]
             elif self.modality == 'RGBDiff':
                 self.input_mean = [0.485, 0.456, 0.406] + [0] * 3 * self.new_length
                 self.input_std = self.input_std + [np.mean(self.input_std) * 2] * 3 * self.new_length
+
         elif base_model == 'BNInception':
             import model_zoo
             self.base_model = getattr(model_zoo, base_model)()
@@ -113,8 +121,11 @@ class TSN(nn.Module):
 
             if self.modality == 'Flow':
                 self.input_mean = [128]
+            elif self.modality == 'depth':
+                self.input_mean = [128]
             elif self.modality == 'RGBDiff':
                 self.input_mean = self.input_mean * (1 + self.new_length)
+
         elif base_model == 'InceptionV3':
             import model_zoo
             self.base_model = getattr(model_zoo, base_model)()
@@ -122,7 +133,10 @@ class TSN(nn.Module):
             self.input_size = 299
             self.input_mean = [104,117,128]
             self.input_std = [1]
+
             if self.modality == 'Flow':
+                self.input_mean = [128]
+            elif self.modality == 'depth':
                 self.input_mean = [128]
             elif self.modality == 'RGBDiff':
                 self.input_mean = self.input_mean * (1+self.new_length)
@@ -139,7 +153,7 @@ class TSN(nn.Module):
             import model_zoo
             self.base_model = getattr(model_zoo, base_model)()
             self.base_model.last_layer_name = 'fc'
-            self.input_size = 224
+            self.input_size = 256
             self.input_mean = [0.485, 0.456, 0.406]
             self.input_std = [0.229, 0.224, 0.225]
         else:
@@ -206,9 +220,9 @@ class TSN(nn.Module):
                     raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
 
         return [
-            {'params': first_conv_weight, 'lr_mult': 5 if self.modality == 'Flow' else 1, 'decay_mult': 1,
+            {'params': first_conv_weight, 'lr_mult': 5 if self.modality == 'Flow' or self.modality == 'depth' else 1, 'decay_mult': 1,
              'name': "first_conv_weight"},
-            {'params': first_conv_bias, 'lr_mult': 10 if self.modality == 'Flow' else 2, 'decay_mult': 0,
+            {'params': first_conv_bias, 'lr_mult': 10 if self.modality == 'Flow' or self.modality == 'depth' else 2, 'decay_mult': 0,
              'name': "first_conv_bias"},
             {'params': normal_weight, 'lr_mult': 1, 'decay_mult': 1,
              'name': "normal_weight"},
@@ -219,13 +233,14 @@ class TSN(nn.Module):
         ]
 
     def forward(self, input):
-        sample_len = (3 if self.modality == "RGB" else 2) * self.new_length
+        sample_len = (3 if self.modality == "RGB" or self.modality == 'depth' else 2) * self.new_length
 
         if self.modality == 'RGBDiff':
             sample_len = 3 * self.new_length
             input = self._get_diff(input)
 
         base_out = self.base_model(input.view((-1, sample_len) + input.size()[-2:]))
+        #print('base_out:',base_out)
 
         if self.dropout > 0:
             base_out = self.new_fc(base_out)
@@ -287,7 +302,7 @@ class TSN(nn.Module):
         # Torch models are usually defined in a hierarchical way.
         # nn.modules.children() return all sub modules in a DFS manner
         modules = list(self.base_model.modules())
-        first_conv_idx = filter(lambda x: isinstance(modules[x], nn.Conv2d), list(range(len(modules))))[0]
+        first_conv_idx = list(filter(lambda x: isinstance(modules[x], nn.Conv2d), list(range(len(modules)))))[0] # python 3.x
         conv_layer = modules[first_conv_idx]
         container = modules[first_conv_idx - 1]
 
@@ -328,6 +343,9 @@ class TSN(nn.Module):
             return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75, .66]),
                                                    GroupRandomHorizontalFlip(is_flow=False)])
         elif self.modality == 'Flow':
+            return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75]),
+                                                   GroupRandomHorizontalFlip(is_flow=True)])
+        elif self.modality == 'depth':
             return torchvision.transforms.Compose([GroupMultiScaleCrop(self.input_size, [1, .875, .75]),
                                                    GroupRandomHorizontalFlip(is_flow=True)])
         elif self.modality == 'RGBDiff':
