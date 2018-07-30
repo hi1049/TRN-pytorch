@@ -17,19 +17,19 @@ from torch.nn import functional as F
 # options
 parser = argparse.ArgumentParser(
     description="TRN testing on the full validation set")
-parser.add_argument('dataset', type=str, choices=['something', 'jester', 'moments', 'charades', 'egogesture', 'tacos', 'yawdd'], default="jester")
+parser.add_argument('dataset', type=str, choices=['something', 'jester', 'moments', 'charades', 'egogesture', 'tacos', 'yawdd', 'RS'], default="jester")
 parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff', 'depth'])
 parser.add_argument('weights', type=str)
 parser.add_argument('--arch', type=str, default="BNInception") #resnet101
-parser.add_argument('--save_scores', type=str, default=None)
+parser.add_argument('--save_scores', type=str, default="results")
 parser.add_argument('--test_segments', type=int, default=8)
 parser.add_argument('--max_num', type=int, default=-1)
 parser.add_argument('--test_crops', type=int, default=10)
 parser.add_argument('--input_size', type=int, default=224)
 parser.add_argument('--crop_fusion_type', type=str, default='TRNmultiscale',
                     choices=['avg', 'TRN','TRNmultiscale'])
-parser.add_argument('-j', '--workers', default=30, type=int, metavar='N',
-                    help='number of data loading workers (default: 4)')
+parser.add_argument('-j', '--workers', default=16, type=int, metavar='N',
+                    help='number of data loading workers (default: 16)')
 parser.add_argument('--gpus', nargs='+', type=int, default=None)
 parser.add_argument('--img_feature_dim',type=int, default=256)
 parser.add_argument('--num_set_segments',type=int, default=8,help='TODO: select multiply set of n-frames from a video')
@@ -172,10 +172,12 @@ for i, (data, label) in data_gen:
     prec1, prec5 = accuracy(torch.from_numpy(np.mean(rst[1], axis=0)), label, topk=(1, 5))
     top1.update(prec1[0], 1)
     top5.update(prec5[0], 1)
-    print('video {} done, total {}/{}, average {:.3f} sec/video, moving Prec@1 {:.3f} Prec@5 {:.3f}'.format(i, i+1,
+    print('video {} done, total {}/{}, average {:.3f} sec/video, moving Prec@1 {:.3f} Prec@5 {:.3f}, pred: {:s}, label: {:s}'.format(i, i+1,
                                                                     total_num,
-                                                                    float(cnt_time) / (i+1), top1.avg, top5.avg))
-
+                                                                    float(cnt_time) / (i+1), top1.avg, top5.avg,
+                                                                    categories[np.argmax(np.mean(rst[1:][0], axis=0))],
+                                                                    categories[rst[1:][1]])
+                                                                    )
 video_pred = [np.argmax(np.mean(x[0], axis=0)) for x in output]
 
 video_labels = [x[1] for x in output]

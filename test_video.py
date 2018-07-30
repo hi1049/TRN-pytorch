@@ -77,7 +77,7 @@ group.add_argument('--frame_folder', type=str, default=None)
 parser.add_argument('--modality', type=str, default='RGB',
                     choices=['RGB', 'Flow', 'RGBDiff', 'depth'], )
 parser.add_argument('--dataset', type=str, default='jester',
-                    choices=['something', 'jester', 'moments', 'egogesture', 'tacos', 'yawdd'])
+                    choices=['something', 'jester', 'moments', 'egogesture', 'tacos', 'yawdd', 'RS'])
 parser.add_argument('--rendered_output', type=str, default=None)
 parser.add_argument('--arch', type=str, default="InceptionV3")
 parser.add_argument('--input_size', type=int, default=224)
